@@ -1,0 +1,312 @@
+.side-component-wrapper {
+  display: flex;
+  width: 30%;
+  max-width: 420px;
+  /* No height: as a flex child of .cometchat-root, the default align-items: stretch already
+     sizes this. */
+  flex-direction: column;
+  align-items: flex-start;
+  position: relative;
+  gap: 0px;
+  flex-shrink: 0;
+  background: var(--cometchat-background-color-01, #fff);
+  border-left: 1px solid var(--cometchat-border-color-light, #f5f5f5);
+}
+
+.side-component-wrapper__content {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+}
+
+.side-component-header {
+  display: flex;
+  min-height: 65px;
+  padding: var(--cometchat-padding-2, 8px) var(--cometchat-padding-4, 16px);
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  align-self: stretch;
+  border-bottom: 1px solid var(--cometchat-border-color-light, #f5f5f5);
+  background: var(--cometchat-background-color-01, #fff);
+}
+
+.side-component-header__text {
+  overflow: hidden;
+  color: var(--cometchat-text-color-primary, #141414);
+  text-overflow: ellipsis;
+  font: var(--cometchat-font-heading3-bold, 700 20px Roboto);
+}
+
+.side-component-header__icon {
+  -webkit-mask: url('../../assets/close.svg') center center no-repeat;
+  -webkit-mask-size: contain;
+  background: var(--cometchat-icon-color-primary, #141414);
+  cursor: pointer;
+  width: 24px;
+  height: 24px;
+}
+
+.side-component-header__icon:hover {
+  background: var(--cometchat-icon-color-highlight, #6852d6);
+}
+
+.side-component-content {
+  display: flex;
+  padding-top: 40px;
+  /* Was calc(100vh - 64px). .side-component-wrapper__content is `height: 100%` of
+     .side-component-wrapper — once that stops measuring the viewport (above), 100% here resolves
+     against the panel's real height and the same subtraction works without touching vh. */
+  height: calc(100% - 64px);
+  flex-direction: column;
+  align-items: center;
+  gap: var(--cometchat-padding-5, 20px);
+  flex-shrink: 0;
+  align-self: stretch;
+  overflow: auto;
+  background: var(--cometchat-background-color-01, #fff);
+}
+
+.side-component-content::-webkit-scrollbar,
+.side-component-content::-webkit-scrollbar-thumb {
+  display: none;
+}
+
+.side-component-content__group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  flex-shrink: 0;
+  align-self: stretch;
+  gap: 12px;
+}
+
+.side-component-content__avatar {
+  display: flex;
+  width: 120px;
+  height: 120px;
+  justify-content: center;
+  align-items: center;
+  flex-shrink: 0;
+  border-radius: var(--cometchat-radius-max, 1500px);
+}
+
+.side-component-content__avatar [data-size] {
+  width: 120px;
+  height: 120px;
+}
+
+.side-component-content__avatar [data-size] img {
+  width: 120px;
+  height: 120px;
+}
+
+.side-component-content__avatar [data-size] span {
+  font: 700 48px/1 var(--cometchat-font-family, Roboto, sans-serif) !important;
+}
+
+.side-component-content__title__wrapper {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 0 var(--cometchat-padding-3, 12px);
+}
+
+.side-component-content__title {
+  overflow: hidden;
+  color: var(--cometchat-text-color-primary, #141414);
+  text-align: center;
+  text-overflow: ellipsis;
+  font: var(--cometchat-font-heading3-medium, 500 20px Roboto);
+}
+
+.side-component-content__description {
+  overflow: hidden;
+  color: var(--cometchat-text-color-secondary, #727272);
+  text-align: center;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font: var(--cometchat-font-caption1-regular, 400 12px Roboto);
+}
+
+.side-component-content__action {
+  width: 100%;
+  border-top: 1px solid var(--cometchat-border-color-light, #f5f5f5);
+  border-bottom: 1px solid var(--cometchat-border-color-light, #f5f5f5);
+}
+
+.side-component-content__action-item {
+  display: flex;
+  padding: var(--cometchat-padding-3, 12px) var(--cometchat-padding-5, 20px);
+  align-items: center;
+  gap: var(--cometchat-padding-3, 12px);
+  align-self: stretch;
+  cursor: pointer;
+}
+
+.side-component-content__action-item--disabled {
+  opacity: 0.4;
+  pointer-events: none;
+  cursor: default;
+}
+
+.side-component-content__action-item-icon {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.side-component-content__action-item-icon--default {
+  width: 24px;
+  height: 24px;
+  object-fit: contain;
+}
+
+.side-component-content__action-item-text {
+  color: var(--cometchat-error-color, #f44649);
+  font: var(--cometchat-font-heading4-regular, 400 16px Roboto);
+}
+
+.side-component-content__action-item-text--default {
+  color: var(--cometchat-text-color-highlight, #6852d6);
+  font: var(--cometchat-font-heading4-regular, 400 16px Roboto);
+}
+
+.cometchat-add-members-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 5;
+  background: var(--cometchat-background-color-01, #fff);
+}
+
+.side-component-group-members {
+  width: 100%;
+  flex: 1;
+  overflow: auto;
+  min-height: calc(100% + 20px);
+}
+
+.side-component-group-members-with-tabs {
+  width: 100%;
+  flex: 1;
+  overflow: auto;
+  min-height: calc(100% - 30px);
+}
+
+.side-component-group-members .cometchat-list__header-title,
+.side-component-group-members-with-tabs .cometchat-list__header-title {
+  display: none;
+}
+
+.side-component-group-tabs-wrapper {
+  width: 100%;
+  padding: 0px var(--cometchat-padding-4, 16px);
+}
+
+.side-component-group-tabs {
+  display: flex;
+  align-items: center;
+  gap: 0px;
+  flex: 1 0 0;
+  border-radius: var(--cometchat-radius-max, 1000px);
+  border: 1px solid var(--cometchat-border-color-light, #f5f5f5);
+  background: var(--cometchat-background-color-03, #f5f5f5);
+}
+
+.side-component-group-tabs__tab {
+  display: flex;
+  height: 40px;
+  padding: var(--cometchat-padding-3, 12px) var(--cometchat-padding-4, 16px);
+  justify-content: center;
+  align-items: center;
+  gap: var(--cometchat-padding-2, 8px);
+  flex: 1 0 0;
+  border-radius: var(--cometchat-radius-max, 1000px);
+  cursor: pointer;
+}
+
+.side-component-group-tabs__tab-active {
+  border: 1px solid var(--cometchat-border-color-light, #f5f5f5);
+  background: var(--cometchat-background-color-01, #fff);
+}
+
+.side-component-group-tabs__tab-text {
+  color: var(--cometchat-text-color-secondary, #727272);
+  font: var(--cometchat-font-heading4-medium, 500 16px Roboto);
+}
+
+.side-component-group-tabs__tab-text-active {
+  color: var(--cometchat-text-color-highlight, #6852d6);
+}
+
+.side-component-group-members .cometchat-list-item__leading-view,
+.side-component-group-members .cometchat-avatar,
+.side-component-group-members .cometchat-avatar__image,
+.side-component-group-members .cometchat-avatar__text,
+.side-component-group-members-with-tabs .cometchat-list-item__leading-view,
+.side-component-group-members-with-tabs .cometchat-avatar,
+.side-component-group-members-with-tabs .cometchat-avatar__image,
+.side-component-group-members-with-tabs .cometchat-avatar__text {
+  width: 40px;
+  height: 40px;
+}
+
+/* Dialog backdrops */
+/* absolute, not fixed — these cover the app, not the browser viewport. The app root
+   (.cometchat / .cometchat-root) is positioned, so top/left + 100% resolves against it. */
+.cometchat-leave-group__backdrop,
+.cometchat-delete-group__backdrop,
+.cometchat-block-user-dialog__backdrop,
+.cometchat-delete-chat-dialog__backdrop {
+  /* Match the app's corners — see the UI Kit's overlays. */
+  border-radius: inherit;
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  top: 0;
+  left: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10;
+}
+
+/**
+ * Narrow layout: the details panel covers the app instead of sitting in a 30% column.
+ *
+ * Class-driven for the same reason as the thread panel — `@media (max-width: 768px)` measures the
+ * browser window, which never fires for a narrow *container* inside a wide one..
+ */
+.side-component-wrapper--fullscreen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  min-width: 100%;
+  max-width: 100%;
+  z-index: 4;
+  border-left: none;
+}
+
+@media (max-width: 768px) {
+  /* Full-screen takeover. `inset: 0` is load-bearing: a positioned element with
+     auto offsets sits at its STATIC position — here, past the right edge of the
+     full-width messages area — so the panel landed offscreen and the message
+     header underneath stayed visible and clickable.
+
+     z-index stays 4: above .messages-wrapper (1) and .conversations-wrapper (2).
+     The header's context-menu layer (1000) is inside .messages-wrapper's stacking
+     context, so 4 already covers it — while a value in the 1000s would bury the
+     dialogs, tooltips and toasts portalled into .cometchat at 1000. */
+  .side-component-wrapper {
+    min-width: 100%;
+    max-width: none;
+    /* absolute, not fixed — fills the app root rather than the device viewport. */
+    position: absolute;
+    inset: 0;
+    z-index: 4;
+  }
+}

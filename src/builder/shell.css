@@ -1,0 +1,36 @@
+/* Global reset the sample app applies via its own index.css, which is excluded from the copy
+   because the widget must not own the page. This app does own it. */
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/**
+ * Styles for the shell screens this app adds around the sample app.
+ *
+ * Only the "credentials missing" fallback in index.tsx lives here. Everything else comes from
+ * CometChat/styles/App.css, which is the sample app's own layout and must not be forked — it
+ * defines .cometchat-root (the containing block for dialogs) and .selector-wrapper-search
+ * (the search overlay), among others.
+ */
+.cometchat-credentials__logo {
+  display: flex;
+  justify-content: center;
+}
+
+.cometchat-credentials__header {
+  color: var(--cometchat-text-color-primary, #141414);
+  font: var(--cometchat-font-heading1-bold);
+  font-size: 18px;
+  text-align: center;
+  padding: 0 24px;
+}
+
+/* The page sizes `.App`; the chat fills `.App`. Resize `.App` to fit the chat into part of a page. */
+.App {
+  height: 100dvh;
+}
+
+.App > .cometchat {
+  height: 100%;
+}

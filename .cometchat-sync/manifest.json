@@ -1,0 +1,25 @@
+{
+  "_comment": "Contract for syncing src/CometChat/ from uikit-react's sample app. Keep this file identical across uikit-builder and both uikit-builder-app branches — it is the single place the exclusion list lives.",
+
+  "source": {
+    "repo": "cometchat-team/uikit-react",
+    "path": "sample-app/src",
+    "defaultRef": "master-v7"
+  },
+
+  "destination": "src/CometChat",
+
+  "_exclude_comment": "Paths relative to sample-app/src that must NOT be copied. Each consumer owns its own shell and credentials, and the sample app's tests are not shipped. Adding to this list means the consumer takes responsibility for that file.",
+  "exclude": [
+    "App.tsx",
+    "index.tsx",
+    "index.css",
+    "AppConstants.ts",
+    "metaInfo.ts",
+    "config/featureProps.spec.ts",
+    "config/settings-coverage.spec.ts"
+  ],
+
+  "_uikitPackage_comment": "Pinned to the exact released version on a release-triggered sync, in whichever dependency section already declares it. Exact because an exported app ships without a lockfile. package.json only — lockfiles are not regenerated.",
+  "uikitPackage": "@cometchat/chat-uikit-react"
+}

@@ -1,0 +1,111 @@
+.cometchat-new-chat-view {
+  height: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  background: var(--cometchat-background-color-01, #fff);
+}
+
+.cometchat-new-chat-view__header {
+  display: flex;
+  padding: 12px 16px;
+  min-height: 64px;
+  box-sizing: border-box;
+  align-items: center;
+  gap: var(--cometchat-padding-3, 12px);
+  justify-content: flex-start;
+  background: inherit;
+  border-bottom: 1px solid var(--cometchat-border-color-light, #f5f5f5);
+}
+
+.cometchat-new-chat-view__header-back {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px;
+  height: 24px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.cometchat-new-chat-view__header-back-icon {
+  display: block;
+  width: 24px;
+  height: 24px;
+  background: var(--cometchat-icon-color-primary, #141414);
+  -webkit-mask: url('../../assets/arrow_back.svg') center center no-repeat;
+  mask: url('../../assets/arrow_back.svg') center center no-repeat;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
+.cometchat-new-chat-view__header-back:hover .cometchat-new-chat-view__header-back-icon {
+  background: var(--cometchat-icon-color-highlight, #6852d6);
+}
+
+.cometchat-new-chat-view__header-title {
+  overflow: hidden;
+  color: var(--cometchat-text-color-primary, #141414);
+  text-overflow: ellipsis;
+  font: var(--cometchat-font-heading2-bold, 700 20px Roboto);
+}
+
+.cometchat-new-chat-view__tabs {
+  display: flex;
+  padding: 1px;
+  align-items: flex-start;
+  align-self: stretch;
+  border-right: 1px solid var(--cometchat-border-color-light, #f5f5f5);
+  background: var(--cometchat-background-color-03, #ebebeb);
+  border-radius: var(--cometchat-radius-max, 1000px);
+  margin: 12px 16px 8px 16px;
+}
+
+.cometchat-new-chat-view__tabs-tab {
+  display: flex;
+  height: 40px;
+  padding: 12px 16px;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  flex: 1 0 0;
+  border-radius: var(--cometchat-radius-max, 1000px);
+  background: inherit;
+  color: var(--cometchat-text-color-secondary, #727272);
+  font: var(--cometchat-font-heading4-medium, 500 16px Roboto);
+  cursor: pointer;
+}
+
+.cometchat-new-chat-view__tabs-tab-active {
+  border-right: 1px solid var(--cometchat-border-color-light, #f5f5f5);
+  background: var(--cometchat-background-color-01, #fff);
+  color: var(--cometchat-text-color-highlight, #6852d6);
+}
+
+.cometchat-new-chat-view__content {
+  flex: 1;
+  overflow: hidden;
+}
+
+/**
+ * Narrow layout: the picker covers the app. Class-driven rather than a viewport media query, which
+ * cannot see a narrow container inside a wide window.
+ */
+.cometchat-new-chat-view--fullscreen {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  z-index: 4;
+}
+
+@media (max-width: 768px) {
+  .cometchat-new-chat-view {
+    /* absolute, not fixed — fills the app root rather than the device viewport. */
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    z-index: 4;
+  }
+}

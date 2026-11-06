@@ -1,0 +1,40 @@
+name: CometChat guard
+
+# Fails a PR that hand-edits the generated src/CometChat/ folder.
+#
+# src/CometChat/ is a byte-identical copy of uikit-react/sample-app/src and is replaced wholesale
+# on every sync, so divergence here is a bug rather than something to reconcile.
+#
+# Without this the failure is silent: a fix made directly in src/CometChat/ works locally and is
+# overwritten by the next release sync, with no error and no obvious cause.
+
+on:
+  pull_request:
+    paths:
+      - 'src/CometChat/**'
+      - '.cometchat-sync/**'
+      - 'scripts/guard-cometchat.mjs'
+  workflow_dispatch:
+
+# Read-only check.
+permissions:
+  contents: read
+
+jobs:
+  guard:
+    runs-on: ubuntu-latest
+    steps:
+      # Full history: the guard diffs base..head and reads commit messages for the sync marker.
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Check for hand-edits to the generated folder
+        env:
+          BASE_SHA: ${{ github.event.pull_request.base.sha }}
+          HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+        run: node scripts/guard-cometchat.mjs

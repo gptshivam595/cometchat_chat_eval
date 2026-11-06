@@ -1,0 +1,165 @@
+name: Sync CometChat from sample app
+
+# Mirrors src/CometChat/ from cometchat-team/uikit-react (sample-app/src) and opens a PR.
+# Fired by the UI Kit's notify-builders-on-release.yml when a Release is published.
+#
+# WHY A MATRIX: this repo carries TWO deliverables on two branches — `dev` (the downloadable
+# low-code app) and `dev-no-code` (the @cometchat/chat-embed widget). Both hold the same
+# src/CometChat/ copy, so one release must sync both. A matrix keeps it one file; two separate
+# workflow files would have to share a filename in this repo and overwrite each other.
+#
+# NOTE ON BRANCHES: for repository_dispatch to fire it, this workflow must live on the repo's
+# DEFAULT branch (master). But each matrix leg checks out its own target branch and opens its PR
+# there — the file lives on master, everything it does happens on dev / dev-no-code. So land it on
+# both branches and let the normal promotion carry it to master; it goes live at that promotion,
+# not before. Until then, use the manual workflow_dispatch below.
+#
+# Setup and testing notes: .cometchat-sync/README.md
+
+on:
+  repository_dispatch:
+    types: [uikit-published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: 'sample-app branch/tag to sync from'
+        default: master-v7
+      version:
+        description: 'UI Kit version to pin (blank = no bump)'
+        default: ''
+      only:
+        description: 'limit to one target branch (blank = both)'
+        default: ''
+        type: choice
+        options: ['', 'dev', 'dev-no-code']
+
+permissions:
+  contents: read
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    strategy:
+      # One branch failing must not cancel the other — they are independent deliverables.
+      fail-fast: false
+      matrix:
+        target: [dev, dev-no-code]
+    # Serialise per target branch, not globally: the two legs touch different branches and
+    # different PRs, so they have no reason to queue behind each other.
+    concurrency:
+      group: sync-cometchat-${{ matrix.target }}
+      cancel-in-progress: false
+    steps:
+      # Lets a manual run target a single branch without editing the matrix.
+      - name: Skip unselected target
+        if: ${{ inputs.only != '' && inputs.only != matrix.target }}
+        run: echo "skipping ${{ matrix.target }} (only=${{ inputs.only }})" && exit 0
+
+      - uses: actions/checkout@v4
+        if: ${{ inputs.only == '' || inputs.only == matrix.target }}
+        with:
+          ref: ${{ matrix.target }}
+
+      # The target branch may not carry the seam yet — `dev-no-code` is still the v6 widget. Skip
+      # rather than fail at the sync script, and the leg starts working once that branch adopts it.
+      - name: Check the target has the sync manifest
+        id: seam
+        if: ${{ inputs.only == '' || inputs.only == matrix.target }}
+        run: |
+          if [ -f .cometchat-sync/manifest.json ]; then
+            echo "present=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "present=false" >> "$GITHUB_OUTPUT"
+            echo "::notice::${{ matrix.target }} has no .cometchat-sync/manifest.json — skipping"
+          fi
+
+      - uses: actions/setup-node@v4
+        if: ${{ (inputs.only == '' || inputs.only == matrix.target) && steps.seam.outputs.present == 'true' }}
+        with:
+          node-version: '20'
+
+      - name: Generate bot token
+        id: bot
+        if: ${{ (inputs.only == '' || inputs.only == matrix.target) && steps.seam.outputs.present == 'true' }}
+        uses: actions/create-github-app-token@v1
+        with:
+          app-id: ${{ secrets.RELEASE_BOT_APP_ID }}
+          private-key: ${{ secrets.RELEASE_BOT_PRIVATE_KEY }}
+          owner: cometchat-team
+          repositories: |
+            uikit-builder-app
+            uikit-react
+
+      - name: Clone the sample app (sparse)
+        if: ${{ (inputs.only == '' || inputs.only == matrix.target) && steps.seam.outputs.present == 'true' }}
+        env:
+          GH_TOKEN: ${{ steps.bot.outputs.token }}
+          # Untrusted: a repository_dispatch payload can come from any write-scoped token.
+          # Pass via env so bash substitutes without re-parsing, then bound the shape below.
+          REF: ${{ github.event.client_payload.ref || inputs.ref || 'master-v7' }}
+        run: |
+          set -euo pipefail
+          case "$REF" in
+            master-v[0-9]* | dev-v[0-9]* | v[0-9]*.[0-9]*.[0-9]* | ENG-[0-9]* ) : ;;
+            * ) echo "refusing suspicious ref: $REF" >&2; exit 1 ;;
+          esac
+          git clone --depth 1 --filter=blob:none --sparse --branch "$REF" \
+            "https://x-access-token:${GH_TOKEN}@github.com/cometchat-team/uikit-react.git" _uikit
+          git -C _uikit sparse-checkout set sample-app/src
+
+      - name: Sync
+        if: ${{ (inputs.only == '' || inputs.only == matrix.target) && steps.seam.outputs.present == 'true' }}
+        env:
+          SYNC_REF: ${{ github.event.client_payload.ref || inputs.ref || 'master-v7' }}
+          UIKIT_VERSION: ${{ github.event.client_payload.version || inputs.version || '' }}
+        run: node scripts/sync-cometchat.mjs _uikit/sample-app/src
+
+      - name: Clean up clone
+        if: ${{ (inputs.only == '' || inputs.only == matrix.target) && steps.seam.outputs.present == 'true' }}
+        run: rm -rf _uikit
+
+      # Pin the UI Kit to the exact released version from the dispatch payload — no npm lookup, so
+      # a release that has not propagated to the registry yet still produces a correct PR.
+      # package.json ONLY, by design: regenerating the lockfile needs a full install, and the PR
+      # body says so rather than half-doing it.
+      - name: Pin the UI Kit to the released version
+        if: ${{ (inputs.only == '' || inputs.only == matrix.target) && steps.seam.outputs.present == 'true' }}
+        env:
+          VERSION: ${{ github.event.client_payload.version || inputs.version || '' }}
+        run: |
+          set -euo pipefail
+          VER="${VERSION#v}"
+          case "$VER" in
+            [0-9]*.[0-9]*.[0-9]* )
+              PKG=$(node -p "require('./.cometchat-sync/manifest.json').uikitPackage")
+              # Exact, not a caret: the exported app ships without a lockfile, so a range would be
+              # resolved fresh on the customer's machine. Written back to whichever section already
+              # declares it, since consumers differ.
+              SECTION=$(node -p "const p=require('./package.json'); p.devDependencies&&p.devDependencies['$PKG'] ? 'devDependencies' : 'dependencies'")
+              npm pkg set "${SECTION}.${PKG}=${VER}"
+              echo "pinned ${PKG} -> ${VER} (${SECTION})" ;;
+            * )
+              echo "no release version in payload ('${VERSION:-}') — skipping version bump" ;;
+          esac
+
+      - name: Open PR
+        if: ${{ (inputs.only == '' || inputs.only == matrix.target) && steps.seam.outputs.present == 'true' }}
+        uses: peter-evans/create-pull-request@v7
+        with:
+          token: ${{ steps.bot.outputs.token }}
+          # Creates the commit through the GitHub API so it is signed by GitHub and attributed to
+          # the App — required if the branch protects against unsigned commits.
+          sign-commits: true
+          base: ${{ matrix.target }}
+          # Per-branch PR branch name. A shared name would make the two legs overwrite each
+          # other's PR, since they run against the same repo.
+          branch: chore/sync-cometchat-${{ matrix.target }}
+          delete-branch: true
+          title: 'chore: sync CometChat/ from the sample app (${{ matrix.target }})'
+          body-path: .cometchat-sync/report.md
+          # The marker lets guard-cometchat.mjs tell this PR apart from a hand-edit.
+          commit-message: 'chore: sync CometChat/ from the sample app [sync-cometchat]'
+          add-paths: |
+            src/CometChat/**
+            .cometchat-sync/**
+            package.json
